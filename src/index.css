@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-kaizen: #F7F5F0;
+  --color-primary-kaizen: #1A1A2E;
+  --color-accent-kaizen: #E8A838;
+  --color-green-kaizen: #2ECC71;
+  --color-orange-kaizen: #F39C12;
+  --color-gray-kaizen: #95A5A6;
+}
+
+body {
+  background-color: var(--color-bg-kaizen);
+  color: var(--color-primary-kaizen);
+  font-family: 'Inter', sans-serif;
+}
