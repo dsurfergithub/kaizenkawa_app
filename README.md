@@ -1,79 +1,42 @@
-# 🎋 Kaizenkawa
+# Kaizenkawa
 
-> **Convierte el *scroll* pasivo en pasos accionables.**
+Kaizenkawa es una aplicación web diseñada para transformar contenido extenso, hilos de X (Twitter) y posts de Instagram en conocimiento accionable y práctico para tu vida personal y profesional.
 
-¿Cuántas veces has guardado un hilo de Twitter o un Reel de Instagram súper inspirador y nunca más lo has vuelto a mirar? **Kaizenkawa** nace para solucionar el síndrome de la "biblioteca digital olvidada". 
+## Características Principales
 
-Inspirada en la filosofía **Kaizen** (mejora continua), esta aplicación web utiliza Inteligencia Artificial para analizar ese contenido que guardas y transformarlo en una guía práctica, personalizada y dividida en pequeños pasos que puedes empezar a aplicar hoy mismo.
+- **Análisis de Contenido Inteligente**: Pega texto extenso o enlaces de X/Instagram y deja que la IA analice el contenido.
+- **Coach Personalizado**: La IA actúa como un coach experto, haciéndote preguntas clave para entender tu situación y objetivos antes de generar la guía.
+- **Guías Accionables**: Genera resúmenes detallados y pasos prácticos divididos en:
+  - En lo Personal
+  - En lo Laboral / Profesional
+  - Takeaway Final + Acción Inmediata
+- **Gestión de Enlaces**: Guarda enlaces interesantes para leer más tarde, categorizados por temas (Finanzas, Espiritual, Crecimiento personal, etc.).
+- **Dashboard y Estadísticas**: Visualiza tu progreso, el estado de tus guías y la distribución de tus enlaces guardados.
+- **Copias de Seguridad**: Exporta e importa tus datos (guías y enlaces) en formato JSON para no perder nunca tu información.
+- **Reinicio de la App**: Una "Zona de Peligro" en el Dashboard te permite borrar todos los datos y reiniciar la aplicación fácilmente.
 
----
+## Tecnologías Utilizadas
 
-## ✨ Características Principales
+- **Frontend**: React 18, TypeScript, Tailwind CSS, Framer Motion (para animaciones), Recharts (para gráficos), Lucide React (para iconos).
+- **Backend**: Express.js (para manejar el scraping básico de URLs).
+- **Inteligencia Artificial**: Google Gemini API (`@google/genai`) para el análisis de texto y generación de guías personalizadas.
+- **Almacenamiento**: `localStorage` del navegador para mantener tus datos privados y accesibles localmente.
 
-* 🧠 **Análisis Inteligente:** Pega un enlace de X (Twitter) o Instagram y la IA extraerá el valor real del contenido.
-* 💬 **Contexto Personalizado:** Antes de darte una guía genérica, la app te hace un par de preguntas rápidas para adaptar los consejos a tu vida y situación actual.
-* 🗺️ **Guías de Acción:** Recibe un plan de acción dividido en "Esta Semana" y "30-90 Días", además de una pregunta activadora para empezar *hoy*.
-* 🔖 **Gestor de Enlaces:** ¿No tienes tiempo de procesar un enlace ahora? Guárdalo en tu lista de lectura categorizada (Finanzas, Crecimiento Personal, Recetas, etc.).
-* 📊 **Dashboard Visual:** Observa tu progreso con gráficos interactivos. Descubre cuántas guías has aplicado, cuántas tienes pendientes y qué categorías consumes más.
-* 💾 **Copias de Seguridad:** Exporta e importa todos tus datos (guías y enlaces) en un archivo JSON. ¡Tus datos son tuyos!
-* ⬇️ **Exportación:** Descarga tus guías en formato `.txt` para llevarlas a Notion, Obsidian o tu bloc de notas favorito.
+## Estructura del Proyecto
 
----
+- `/src/App.tsx`: Componente principal de la aplicación que maneja el estado, la interfaz de usuario y la lógica de navegación.
+- `/src/lib/gemini.ts`: Integración con la API de Google Gemini, incluyendo los prompts del sistema y la validación de esquemas JSON.
+- `/src/lib/download.ts`: Utilidad para exportar las guías generadas a formato Markdown.
+- `/server.ts`: Servidor Express que maneja la extracción de contenido de URLs y sirve la aplicación en producción.
 
-## 🛠️ Tecnologías Utilizadas
+## Uso
 
-* **Frontend:** React 19, Vite, Tailwind CSS (v4).
-* **Animaciones e Iconos:** Framer Motion (`motion/react`) y Lucide React.
-* **Gráficos:** Recharts.
-* **IA:** Google Gemini API (`@google/genai`).
-* **Backend/Despliegue:** Funciones Serverless preparadas para Vercel (`@vercel/node`).
+1. **Analizar Contenido**: En la vista principal, pega un texto extenso o un enlace.
+2. **Responder Preguntas**: El asistente te hará un par de preguntas para afinar el contexto.
+3. **Leer la Guía**: Obtén tu guía personalizada y marca los pasos como aplicados.
+4. **Guardar Enlaces**: Ve a la pestaña "Enlaces" para guardar contenido que quieras procesar más tarde.
+5. **Dashboard**: Revisa tus estadísticas y gestiona tus copias de seguridad.
 
----
+## Privacidad
 
-## 🚀 Instalación y Uso Local
-
-Si quieres correr Kaizenkawa en tu propia máquina, sigue estos pasos:
-
-1. **Clona el repositorio:**
-   ```bash
-   git clone https://github.com/tu-usuario/kaizenkawa.git
-   cd kaizenkawa
-   ```
-
-2. **Instala las dependencias:**
-   ```bash
-   npm install
-   ```
-
-3. **Configura las variables de entorno:**
-   Crea un archivo `.env` en la raíz del proyecto y añade tu clave de la API de Gemini:
-   ```env
-   GEMINI_API_KEY=tu_clave_api_aqui
-   ```
-
-4. **Inicia el servidor de desarrollo:**
-   ```bash
-   npm run dev
-   ```
-   ¡Abre `http://localhost:3000` en tu navegador y empieza a mejorar!
-
----
-
-## ☁️ Despliegue en Vercel
-
-Kaizenkawa está optimizada para ser desplegada en Vercel sin dolores de cabeza (incluye configuración para evitar el error 404 en aplicaciones SPA y funciones Serverless para el scraping).
-
-1. Sube tu código a GitHub.
-2. Entra en [Vercel](https://vercel.com) e importa tu repositorio.
-3. En la sección **Environment Variables**, añade `GEMINI_API_KEY` con tu clave secreta.
-4. Haz clic en **Deploy**. ¡Listo! 🚀
-
----
-
-## 🤝 Contribuir
-
-¡Las contribuciones son súper bienvenidas! Si tienes ideas para mejorar la extracción de enlaces, añadir nuevas plataformas o mejorar los prompts de la IA, siéntete libre de hacer un *fork* y enviar un *Pull Request*.
-
----
-
-*Diseñado con 🍵 y enfoque en la mejora continua.*
+Todos tus datos (guías, enlaces y respuestas) se guardan localmente en tu navegador mediante `localStorage`. No se envían datos a servidores externos, excepto el contenido que se envía a la API de Gemini para su análisis.

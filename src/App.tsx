@@ -16,7 +16,7 @@ export interface SavedGuide {
   status: 'applied' | 'pending' | 'irrelevant';
 }
 
-export type LinkCategory = 'Finanza' | 'Espiritual' | 'Crecimiento personal' | 'Recetas' | 'Inspiración' | 'Música' | 'Historia' | 'Otros';
+export type LinkCategory = 'Finanzas' | 'Espiritual' | 'Crecimiento personal' | 'Recetas' | 'Inspiración' | 'Música' | 'Historia' | 'Otros';
 
 export interface SavedLink {
   id: string;
@@ -27,7 +27,7 @@ export interface SavedLink {
 }
 
 const CATEGORIES: LinkCategory[] = [
-  'Finanza', 'Espiritual', 'Crecimiento personal', 'Recetas', 
+  'Finanzas', 'Espiritual', 'Crecimiento personal', 'Recetas', 
   'Inspiración', 'Música', 'Historia', 'Otros'
 ];
 
@@ -66,6 +66,7 @@ export default function App() {
   // New Link State
   const [newLinkUrl, setNewLinkUrl] = useState('');
   const [newLinkCategory, setNewLinkCategory] = useState<LinkCategory>('Otros');
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('kaizenkawa_history');
@@ -128,6 +129,14 @@ export default function App() {
     const updated = savedLinks.filter(l => l.id !== id);
     setSavedLinks(updated);
     localStorage.setItem('kaizenkawa_links', JSON.stringify(updated));
+  };
+
+  const handleResetApp = () => {
+    setHistory([]);
+    setSavedLinks([]);
+    localStorage.removeItem('kaizenkawa_history');
+    localStorage.removeItem('kaizenkawa_links');
+    setShowResetConfirm(false);
   };
 
   // --- Guide Generation Functions ---
@@ -473,6 +482,42 @@ export default function App() {
                     />
                   </label>
                 </div>
+              </div>
+
+              {/* Reset App Section */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-red-100">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-red-600 mb-4 flex items-center gap-2">
+                  <Trash2 className="w-4 h-4" /> Zona de Peligro
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Borra todos los enlaces y guías guardadas. Esta acción no se puede deshacer.
+                </p>
+                {showResetConfirm ? (
+                  <div className="flex flex-col sm:flex-row gap-4 items-center bg-red-50 p-4 rounded-xl border border-red-100">
+                    <p className="text-sm text-red-800 font-medium flex-1">¿Estás seguro? Se borrará todo.</p>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <button
+                        onClick={() => setShowResetConfirm(false)}
+                        className="flex-1 sm:flex-none py-2 px-4 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={handleResetApp}
+                        className="flex-1 sm:flex-none py-2 px-4 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer"
+                      >
+                        Sí, borrar todo
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowResetConfirm(true)}
+                    className="flex items-center justify-center gap-2 py-2.5 px-4 border border-red-200 text-red-600 rounded-xl text-sm font-medium hover:bg-red-50 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" /> Reiniciar Aplicación
+                  </button>
+                )}
               </div>
             </motion.div>
           ) : view === 'links' ? (
