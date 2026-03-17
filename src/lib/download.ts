@@ -1,6 +1,10 @@
 import { Guide } from "./gemini";
 
 export function downloadGuide(guide: Guide, postUrl: string) {
+  const dataPointsSection = guide.data_points && guide.data_points.length > 0 
+    ? `\nDATOS CLAVE\n-----------\n${guide.data_points.map((point, i) => `${i + 1}. ${point}`).join("\n")}\n` 
+    : "";
+
   const content = `GUÍA KAIZENKAWA
 ================
 Fuente: ${postUrl}
@@ -9,7 +13,7 @@ Tema: ${guide.topic_tag.toUpperCase()}
 RESUMEN DETALLADO
 -----------------
 ${guide.summary}
-
+${dataPointsSection}
 ESTA SEMANA (Corto Plazo)
 -------------------------
 ${guide.steps_short.map((step, i) => `${i + 1}. ${step}`).join("\n")}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Download, CheckCircle, Clock, XCircle, Link as LinkIcon, Loader2, MessageSquare, History, Plus, ChevronRight, Bookmark, Trash2, LayoutDashboard, Upload, Save } from 'lucide-react';
+import { ArrowRight, Download, CheckCircle, Clock, XCircle, Link as LinkIcon, Loader2, MessageSquare, History, Plus, ChevronRight, Bookmark, Trash2, LayoutDashboard, Upload, Save, TrendingUp } from 'lucide-react';
 import { generateContextQuestion, generateGuide, Guide } from './lib/gemini';
 import { downloadGuide } from './lib/download';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -50,8 +50,9 @@ export default function App() {
 
   // Guide Generation State
   const [step, setStep] = useState<Step>('input');
+  const [inputContent, setInputContent] = useState('');
   const [url, setUrl] = useState('');
-  const [platform, setPlatform] = useState<'x' | 'instagram' | null>(null);
+  const [platform, setPlatform] = useState<'x' | 'instagram' | 'text' | null>(null);
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -130,37 +131,52 @@ export default function App() {
   };
 
   // --- Guide Generation Functions ---
-  const handleUrlSubmit = async (e: React.FormEvent) => {
+  const handleInputSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!url) return;
+    if (!inputContent.trim()) return;
 
     setIsLoading(true);
-    try {
-      const res = await fetch('/api/scrape', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-      const data = await res.json();
 
-      if (data.error && !data.platform) {
-        setError(data.error);
+    const isUrl = /^https?:\/\//i.test(inputContent.trim());
+
+    if (isUrl) {
+      const urlToProcess = inputContent.trim();
+      setUrl(urlToProcess);
+      
+      try {
+        const res = await fetch('/api/scrape', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: urlToProcess })
+        });
+        const data = await res.json();
+
+        if (data.error && !data.platform) {
+          setError(data.error);
+          setIsLoading(false);
+          return;
+        }
+
+        setPlatform(data.platform);
+
+        if (data.platform === 'instagram' || (data.platform === 'x' && !data.content)) {
+          setStep('manual_input');
+        } else {
+          setContent(data.content);
+          await askFirstQuestion(data.content, data.platform);
+        }
+      } catch (err) {
+        setError('Error al procesar la URL. Por favor intenta de nuevo.');
+      } finally {
         setIsLoading(false);
-        return;
       }
-
-      setPlatform(data.platform);
-
-      if (data.platform === 'instagram' || (data.platform === 'x' && !data.content)) {
-        setStep('manual_input');
-      } else {
-        setContent(data.content);
-        await askFirstQuestion(data.content, data.platform);
-      }
-    } catch (err) {
-      setError('Error al procesar la URL. Por favor intenta de nuevo.');
-    } finally {
+    } else {
+      // It's raw text
+      setUrl('Texto manual');
+      setPlatform('text');
+      setContent(inputContent);
+      await askFirstQuestion(inputContent, 'texto');
       setIsLoading(false);
     }
   };
@@ -176,6 +192,7 @@ export default function App() {
   const askFirstQuestion = async (postContent: string, postPlatform: string) => {
     try {
       const q1 = await generateContextQuestion(postContent, postPlatform, 1);
+
       setQuestion1(q1);
       setStep('chat1');
     } catch (err) {
@@ -226,6 +243,7 @@ export default function App() {
 
   const resetFlow = () => {
     setStep('input');
+    setInputContent('');
     setUrl('');
     setContent('');
     setGuide(null);
@@ -605,22 +623,19 @@ export default function App() {
                   exit={{ opacity: 0, y: -20 }}
                   className="bg-white p-8 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-black/5"
                 >
-                  <form onSubmit={handleUrlSubmit} className="space-y-4">
+                  <form onSubmit={handleInputSubmit} className="space-y-4">
                     <div>
-                      <label htmlFor="url" className="block text-sm font-medium text-primary-kaizen mb-2">
-                        URL del Post
+                      <label htmlFor="inputContent" className="block text-sm font-medium text-primary-kaizen mb-2">
+                        Pega el texto extenso del post o un enlace (X/Instagram)
                       </label>
                       <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <LinkIcon className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input
-                          type="url"
-                          id="url"
-                          value={url}
-                          onChange={(e) => setUrl(e.target.value)}
-                          className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent-kaizen focus:border-accent-kaizen transition-colors bg-gray-50"
-                          placeholder="https://x.com/... o https://instagram.com/..."
+                        <textarea
+                          id="inputContent"
+                          rows={6}
+                          value={inputContent}
+                          onChange={(e) => setInputContent(e.target.value)}
+                          className="block w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent-kaizen focus:border-accent-kaizen transition-colors bg-gray-50 resize-none"
+                          placeholder="Pega aquí todo el contenido del hilo, post, o el enlace (https://x.com/...)"
                           required
                         />
                       </div>
@@ -631,7 +646,7 @@ export default function App() {
                       disabled={isLoading}
                       className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary-kaizen hover:bg-primary-kaizen/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-kaizen disabled:opacity-70 transition-all cursor-pointer"
                     >
-                      {isLoading ? <Loader2 className="animate-spin h-5 w-5" /> : 'Analizar Post'}
+                      {isLoading ? <Loader2 className="animate-spin h-5 w-5" /> : 'Analizar Contenido'}
                     </button>
                   </form>
                 </motion.div>
@@ -809,11 +824,30 @@ export default function App() {
                     <p className="text-primary-kaizen leading-relaxed whitespace-pre-wrap">{guide.summary}</p>
                   </div>
 
+                  {/* Data Points */}
+                  {guide.data_points && guide.data_points.length > 0 && (
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-black/5">
+                      <h2 className="text-sm font-bold uppercase tracking-wider text-blue-600 mb-4 flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4" /> Datos Clave
+                      </h2>
+                      <ul className="space-y-3">
+                        {guide.data_points.map((point, i) => (
+                          <li key={i} className="flex items-start gap-3">
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium mt-0.5">
+                              {i + 1}
+                            </span>
+                            <span className="text-primary-kaizen leading-relaxed">{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   {/* Steps */}
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-black/5">
                       <h2 className="text-sm font-bold uppercase tracking-wider text-orange-kaizen mb-4 flex items-center gap-2">
-                        <Clock className="w-4 h-4" /> Esta Semana
+                        <Clock className="w-4 h-4" /> En lo Personal
                       </h2>
                       <ul className="space-y-3">
                         {guide.steps_short.map((step, i) => (
@@ -829,7 +863,7 @@ export default function App() {
 
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-black/5">
                       <h2 className="text-sm font-bold uppercase tracking-wider text-primary-kaizen mb-4 flex items-center gap-2">
-                        <ArrowRight className="w-4 h-4" /> 30-90 Días
+                        <ArrowRight className="w-4 h-4" /> En lo Laboral / Profesional
                       </h2>
                       <ul className="space-y-3">
                         {guide.steps_long.map((step, i) => (
@@ -846,7 +880,7 @@ export default function App() {
 
                   {/* Activation */}
                   <div className="bg-accent-kaizen/10 border border-accent-kaizen/20 p-6 rounded-2xl text-center">
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-accent-kaizen mb-3">Empieza Hoy</h2>
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-accent-kaizen mb-3">Takeaway Final + Acción Inmediata</h2>
                     <p className="text-xl font-medium text-primary-kaizen">{guide.activation_question}</p>
                   </div>
 
